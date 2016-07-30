@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        jar="E:\Projects\Hackathon\gvrfDemoProjects\GearVRf-Demos\VRHackathons\FastEater\app\build\intermediates\incremental-classes\debug\instant-run-bootstrap.jar"
+        jumboMode="true"
+        revision="24.0.1"
+        sha1="6582b47d808ca5394d146a97dd45a451aeebb530">
+        <dex dex="E:\Projects\Hackathon\gvrfDemoProjects\GearVRf-Demos\VRHackathons\FastEater\app\build\intermediates\transforms\dex\debug\folders\1000\10\instant-run-bootstrap_81728142c5eda40b1dd7052bcff643155bda33cd\classes.dex" />
+    </item>
+    <item
+        jar="E:\Projects\Hackathon\gvrfDemoProjects\GearVRf-Demos\VRHackathons\FastEater\app\build\intermediates\exploded-aar\FastEater\framework-debug\unspecified\jars\libs\jsr223.jar"
+        jumboMode="true"
+        revision="24.0.1"
+        sha1="1f7b65bf95cfb09514802d57424c23f07fc33096">
+        <dex dex="E:\Projects\Hackathon\gvrfDemoProjects\GearVRf-Demos\VRHackathons\FastEater\app\build\intermediates\transforms\dex\debug\folders\1000\8\jsr223_2f39d12a111bef5765a173ab4266d1d42a775523\classes.dex" />
+    </item>
+    <item
+        jar="E:\Projects\Hackathon\gvrfDemoProjects\GearVRf-Demos\VRHackathons\FastEater\app\build\intermediates\exploded-aar\FastEater\framework-debug\unspecified\jars\libs\gson-2.2.4.jar"
+        jumboMode="true"
+        revision="24.0.1"
+        sha1="a60a5e993c98c864010053cb901b7eab25306568">
+        <dex dex="E:\Projects\Hackathon\gvrfDemoProjects\GearVRf-Demos\VRHackathons\FastEater\app\build\intermediates\transforms\dex\debug\folders\1000\8\gson-2.2.4_ee8445a9bc4e6f119fc7f1196f95ef60d8a8b5f9\classes.dex" />
+    </item>
+    <item
+        jar="E:\Projects\Hackathon\gvrfDemoProjects\GearVRf-Demos\VRHackathons\FastEater\app\build\intermediates\incremental-runtime-classes\debug\instant-run.jar"
+        jumboMode="true"
+        revision="24.0.1"
+        sha1="a570d35202458fa02ec07225b09bded3d0b2d9ca">
+        <dex dex="E:\Projects\Hackathon\gvrfDemoProjects\GearVRf-Demos\VRHackathons\FastEater\app\build\intermediates\transforms\dex\debug\folders\1000\10\instant-run_114b2e8838c4ae02fd1cfda1443cc58136aae257\classes.dex" />
+    </item>
+    <item
+        jar="E:\Projects\Hackathon\gvrfDemoProjects\GearVRf-Demos\VRHackathons\FastEater\app\build\intermediates\exploded-aar\FastEater\framework-debug\unspecified\jars\libs\js.jar"
+        jumboMode="true"
+        revision="24.0.1"
+        sha1="0fb212c2ed7a32798d191e0b56204b4fedce5735">
+        <dex dex="E:\Projects\Hackathon\gvrfDemoProjects\GearVRf-Demos\VRHackathons\FastEater\app\build\intermediates\transforms\dex\debug\folders\1000\8\js_ec84ce0348c12746ac786150dbe6e4a72858ebed\classes.dex" />
+    </item>
+    <item
+        jar="E:\Projects\Hackathon\gvrfDemoProjects\GearVRf-Demos\VRHackathons\FastEater\app\build\intermediates\exploded-aar\FastEater\framework-debug\unspecified\jars\libs\jnlua-android.jar"
+        jumboMode="true"
+        revision="24.0.1"
+        sha1="25be5f2cb854bdbdd489ac6ff164fa6fdc78c0f7">
+        <dex dex="E:\Projects\Hackathon\gvrfDemoProjects\GearVRf-Demos\VRHackathons\FastEater\app\build\intermediates\transforms\dex\debug\folders\1000\8\jnlua-android_fd0b98a7425386d7403d2c65a7503a74040ac93f\classes.dex" />
+    </item>
+    <item
+        jar="E:\Projects\Hackathon\gvrfDemoProjects\GearVRf-Demos\VRHackathons\FastEater\app\build\intermediates\exploded-aar\FastEater\framework-debug\unspecified\jars\libs\jline-android.jar"
+        jumboMode="true"
+        revision="24.0.1"
+        sha1="3937c8bad0468172c156ed3b8fe60ee5bb924993">
+        <dex dex="E:\Projects\Hackathon\gvrfDemoProjects\GearVRf-Demos\VRHackathons\FastEater\app\build\intermediates\transforms\dex\debug\folders\1000\8\jline-android_3cf0352e8fb30bf2c286a221a62887ed4dd341b9\classes.dex" />
+    </item>
+
+</items>

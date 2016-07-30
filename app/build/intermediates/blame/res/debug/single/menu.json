@@ -1,0 +1,10 @@
+[
+    {
+        "merged": "E:\\Projects\\Hackathon\\gvrfDemoProjects\\GearVRf-Demos\\VRHackathons\\FastEater\\app\\build\\intermediates\\res\\merged\\debug\\menu\\femain.xml",
+        "source": "E:\\Projects\\Hackathon\\gvrfDemoProjects\\GearVRf-Demos\\VRHackathons\\FastEater\\app\\src\\main\\res\\menu\\femain.xml"
+    },
+    {
+        "merged": "E:\\Projects\\Hackathon\\gvrfDemoProjects\\GearVRf-Demos\\VRHackathons\\FastEater\\app\\build\\intermediates\\res\\merged\\debug\\menu\\main.xml",
+        "source": "E:\\Projects\\Hackathon\\gvrfDemoProjects\\GearVRf-Demos\\VRHackathons\\FastEater\\app\\build\\intermediates\\exploded-aar\\FastEater\\framework-debug\\unspecified\\res\\menu\\main.xml"
+    }
+]

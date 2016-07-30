@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/FastEater.iml" filepath="$PROJECT_DIR$/FastEater.iml" />
+      <module fileurl="file://$PROJECT_DIR$/SystemUtils/SystemUtils.iml" filepath="$PROJECT_DIR$/SystemUtils/SystemUtils.iml" />
+      <module fileurl="file://$PROJECT_DIR$/VrApi/VrApi.iml" filepath="$PROJECT_DIR$/VrApi/VrApi.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/framework-debug/framework-debug.iml" filepath="$PROJECT_DIR$/framework-debug/framework-debug.iml" />
+    </modules>
+  </component>
+</project>
