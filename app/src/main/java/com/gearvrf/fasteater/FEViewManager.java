@@ -1,6 +1,7 @@
 package com.gearvrf.fasteater;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +42,7 @@ import org.siprop.bullet.MotionState;
 import org.siprop.bullet.RigidBody;
 import org.siprop.bullet.Transform;
 import org.siprop.bullet.shape.BoxShape;
+import org.siprop.bullet.shape.StaticPlaneShape;
 import org.siprop.bullet.util.Point3;
 import org.siprop.bullet.util.Vector3;
 
@@ -89,16 +91,10 @@ public class FEViewManager extends GVRScript {
 
 		mainSceneObject = new GVRSceneObject(mGVRContext);
 		mMainScene.addSceneObject(mainSceneObject);
-		mMainScene.getMainCameraRig().getTransform().setPosition(0.0f, 6.0f, 1.0f);
-
-		// add space
-		/*GVRSceneObject spaceMeshObject = asyncSceneObject(mGVRContext, "space_sphere.obj", "clouds.png");
-		spaceMeshObject.getTransform().setScale(200, 200, 200);
-		mainSceneObject.addChildObject(spaceMeshObject);*/
+		mMainScene.getMainCameraRig().getTransform().setPosition(0.0f, 6.0f, 5.0f);
 
         GVRMesh mesh = mGVRContext.loadMesh(new GVRAndroidResource(mGVRContext,
                 "space_sphere.obj"));
-
 
         GVRSceneObject leftScreen = new GVRSceneObject(gvrContext, mesh,
                 gvrContext.loadTexture(new GVRAndroidResource(mGVRContext,
@@ -113,7 +109,7 @@ public class FEViewManager extends GVRScript {
         mainSceneObject.addChildObject(rightScreen);
 
 		// add head-tracking pointer
-		headTracker = new GVRSceneObject(mGVRContext, new FutureWrapper<GVRMesh>(mGVRContext.createQuad(0.3f, 0.3f)),
+		headTracker = new GVRSceneObject(mGVRContext, new FutureWrapper<GVRMesh>(mGVRContext.createQuad(0.5f, 0.5f)),
 				mGVRContext.loadFutureTexture(new GVRAndroidResource(mGVRContext, "mouth_open.png")));
 		headTracker.getTransform().setPosition(0.0f, 0.0f, -2.0f);
 		headTracker.getRenderData().setDepthTest(false);
@@ -128,23 +124,23 @@ public class FEViewManager extends GVRScript {
 		astronautMeshObject.getTransform().setPosition(0.0f, 0.0f, -5.0f);
 		mMainScene.getMainCameraRig().addChildObject(astronautMeshObject);*/
 
-        /*mBullet = new Bullet();
+        mBullet = new Bullet();
 
         mBullet.createPhysicsWorld(new Vector3(-480.0f, -480.0f, -480.0f),
                 new Vector3(480.0f, 480.0f, 480.0f), 1024, new Vector3(0.0f,
-                        -9.8f, 0.0f));*/
+                        -9.8f, 0.0f));
 
         /*GVRSceneObject groundScene = quadWithTexture(300.0f, 300.0f, "floor.jpg");
         groundScene.getTransform().setRotationByAxis(-90.0f, 1.0f, 0.0f, 0.0f);
         groundScene.getTransform().setPosition(0.0f, 0.0f, 0.0f);
         mainSceneObject.addChildObject(groundScene);*/
 
-        /*StaticPlaneShape floorShape = new StaticPlaneShape(new Vector3(0.0f,
+        StaticPlaneShape floorShape = new StaticPlaneShape(new Vector3(0.0f,
                 1.0f, 0.0f), 0.0f);
         Geometry floorGeometry = mBullet.createGeometry(floorShape, 0.0f,
                 new Vector3(0.0f, 0.0f, 0.0f));
         MotionState floorState = new MotionState();
-        mBullet.createAndAddRigidBody(floorGeometry, floorState);*/
+        mBullet.createAndAddRigidBody(floorGeometry, floorState);
 
 		//setDisplayMessage("Welcome to FastEater", 2, 1, Color.BLACK, 10);
 
@@ -250,8 +246,15 @@ public class FEViewManager extends GVRScript {
     private int MIN_SPEED = 2;
     private int MAX_SPEED = 0;
 
+    private String[][] OverEatObjects = new String[][]{
+            { "hotdog.obj", "hotdog.png" },
+            { "hamburger.obj", "hamburger.png" },
+            { "bomb.obj", "bomb.png" }
+    };
+
     public void throwAnObject() throws IOException {
-        GVRSceneObject object = asyncSceneObject(mGVRContext, "hotdog.obj", "hotdog.png");
+        int rand_index = random.nextInt(OverEatObjects.length);
+        GVRSceneObject object = asyncSceneObject(mGVRContext, OverEatObjects[rand_index][0], OverEatObjects[rand_index][1]);
 		object.getTransform().setPosition(
                 randomInRangeFloat(MIN_GAME_WIDTH, MAX_GAME_WIDTH),
                 randomInRangeFloat(MIN_GAME_HEIGHT_START, MAX_GAME_HEIGHT_START),
@@ -259,7 +262,6 @@ public class FEViewManager extends GVRScript {
 		mainSceneObject.addChildObject(object);
         mObjects.add(object);
 
-        //relativeMotionAnimation(object, randomInRange(MIN_SPEED, MAX_SPEED), 0, 0, -(object.getTransform().getPositionZ() + 1));
         relativeMotionAnimation(object,
                 randomInRange(MIN_SPEED, MAX_SPEED),
                 0,
@@ -284,13 +286,15 @@ public class FEViewManager extends GVRScript {
         }*/
 
         for (int i = 0; i < mObjects.size(); i++) {
-            if(mObjects.get(i) != null) {
+            if(mObjects.get(i) != null && mObjects.get(i).getRenderData().getMesh() != null) {
                 if (mObjects.get(i).isColliding(headTracker)) {
                     mainSceneObject.removeChildObject(mObjects.get(i));
                     mObjects.remove(i);
                 }
             }
         }
+        //mBullet.applyCentralImpulse();
+        //mBullet.setactive - true
 
 		mMainScene.getMainCameraRig()
 		.getTransform()
