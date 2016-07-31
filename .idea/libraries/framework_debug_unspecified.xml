@@ -1,13 +1,13 @@
 <component name="libraryTable">
   <library name="framework-debug-unspecified">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/app/build/intermediates/exploded-aar/FastEater/framework-debug/unspecified/jars/classes.jar!/" />
-      <root url="jar://$PROJECT_DIR$/app/build/intermediates/exploded-aar/FastEater/framework-debug/unspecified/jars/libs/jnlua-android.jar!/" />
-      <root url="file://$PROJECT_DIR$/app/build/intermediates/exploded-aar/FastEater/framework-debug/unspecified/res" />
-      <root url="jar://$PROJECT_DIR$/app/build/intermediates/exploded-aar/FastEater/framework-debug/unspecified/jars/libs/gson-2.2.4.jar!/" />
-      <root url="jar://$PROJECT_DIR$/app/build/intermediates/exploded-aar/FastEater/framework-debug/unspecified/jars/libs/js.jar!/" />
-      <root url="jar://$PROJECT_DIR$/app/build/intermediates/exploded-aar/FastEater/framework-debug/unspecified/jars/libs/jline-android.jar!/" />
-      <root url="jar://$PROJECT_DIR$/app/build/intermediates/exploded-aar/FastEater/framework-debug/unspecified/jars/libs/jsr223.jar!/" />
+      <root url="jar://$PROJECT_DIR$/app/build/intermediates/exploded-aar/FastEater_AS/framework-debug/unspecified/jars/libs/jsr223.jar!/" />
+      <root url="jar://$PROJECT_DIR$/app/build/intermediates/exploded-aar/FastEater_AS/framework-debug/unspecified/jars/libs/gson-2.2.4.jar!/" />
+      <root url="jar://$PROJECT_DIR$/app/build/intermediates/exploded-aar/FastEater_AS/framework-debug/unspecified/jars/libs/js.jar!/" />
+      <root url="jar://$PROJECT_DIR$/app/build/intermediates/exploded-aar/FastEater_AS/framework-debug/unspecified/jars/classes.jar!/" />
+      <root url="file://$PROJECT_DIR$/app/build/intermediates/exploded-aar/FastEater_AS/framework-debug/unspecified/res" />
+      <root url="jar://$PROJECT_DIR$/app/build/intermediates/exploded-aar/FastEater_AS/framework-debug/unspecified/jars/libs/jline-android.jar!/" />
+      <root url="jar://$PROJECT_DIR$/app/build/intermediates/exploded-aar/FastEater_AS/framework-debug/unspecified/jars/libs/jnlua-android.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

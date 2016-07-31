@@ -17,6 +17,7 @@ import org.gearvrf.GVRRenderData;
 import org.gearvrf.GVRScene;
 import org.gearvrf.GVRSceneObject;
 import org.gearvrf.GVRScript;
+import org.gearvrf.GVRSphereCollider;
 import org.gearvrf.GVRTransform;
 import org.gearvrf.GVRRenderData.GVRRenderingOrder;
 import org.gearvrf.animation.GVRAnimation;
@@ -58,6 +59,7 @@ public class FEViewManager extends GVRScript {
     private RigidBody boxBody;
     private Boolean gameStart = false;
     private Map<RigidBody, GVRSceneObject> rigidBodiesSceneMap = new HashMap<RigidBody, GVRSceneObject>();
+    private Timer timer;
 
 	private GVRSceneObject asyncSceneObject(GVRContext context, String meshName, String textureName)
 			throws IOException {
@@ -65,9 +67,14 @@ public class FEViewManager extends GVRScript {
 				new GVRAndroidResource(context, meshName), new GVRAndroidResource(context, textureName));
 	}
 
+    // (0,10) returns inclusive 0 and 10; (-10, 10) returns 1 - 10 + 1 = -8
 	private int randomInRange(int min, int max) {
-		return random.nextInt((max - min) + 1) + min;
+        return random.nextInt(Math.abs(max - min) + 1) + min;
 	}
+
+    private float randomInRangeFloat(int min, int max) {
+        return random.nextFloat() * (max - min) + min;
+    }
 
 	@Override
 	public void onInit(GVRContext gvrContext) throws IOException, InterruptedException {
@@ -85,17 +92,33 @@ public class FEViewManager extends GVRScript {
 		mMainScene.getMainCameraRig().getTransform().setPosition(0.0f, 6.0f, 1.0f);
 
 		// add space
-		GVRSceneObject spaceMeshObject = asyncSceneObject(mGVRContext, "space_sphere.obj", "clouds.png");
+		/*GVRSceneObject spaceMeshObject = asyncSceneObject(mGVRContext, "space_sphere.obj", "clouds.png");
 		spaceMeshObject.getTransform().setScale(200, 200, 200);
-		mainSceneObject.addChildObject(spaceMeshObject);
+		mainSceneObject.addChildObject(spaceMeshObject);*/
+
+        GVRMesh mesh = mGVRContext.loadMesh(new GVRAndroidResource(mGVRContext,
+                "space_sphere.obj"));
+
+
+        GVRSceneObject leftScreen = new GVRSceneObject(gvrContext, mesh,
+                gvrContext.loadTexture(new GVRAndroidResource(mGVRContext,
+                        "city_domemap_left.png")));
+        leftScreen.getTransform().setScale(200,200,200);
+        GVRSceneObject rightScreen = new GVRSceneObject(gvrContext, mesh,
+                gvrContext.loadTexture(new GVRAndroidResource(mGVRContext,
+                        "city_domemap_right.png")));
+        rightScreen.getTransform().setScale(200,200,200);
+
+        mainSceneObject.addChildObject(leftScreen);
+        mainSceneObject.addChildObject(rightScreen);
 
 		// add head-tracking pointer
-		/*headTracker = new GVRSceneObject(mGVRContext, new FutureWrapper<GVRMesh>(mGVRContext.createQuad(0.05f, 0.05f)),
-				mGVRContext.loadFutureTexture(new GVRAndroidResource(mGVRContext, "headtrackingpointer.png")));
-		headTracker.getTransform().setPosition(0.0f, 0.0f, -1.0f);
+		headTracker = new GVRSceneObject(mGVRContext, new FutureWrapper<GVRMesh>(mGVRContext.createQuad(0.3f, 0.3f)),
+				mGVRContext.loadFutureTexture(new GVRAndroidResource(mGVRContext, "mouth_open.png")));
+		headTracker.getTransform().setPosition(0.0f, 0.0f, -2.0f);
 		headTracker.getRenderData().setDepthTest(false);
 		headTracker.getRenderData().setRenderingOrder(100000);
-		mMainScene.getMainCameraRig().addChildObject(headTracker);*/
+		mMainScene.getMainCameraRig().addChildObject(headTracker);
 		
 		//add scoreBoard
 
@@ -111,10 +134,10 @@ public class FEViewManager extends GVRScript {
                 new Vector3(480.0f, 480.0f, 480.0f), 1024, new Vector3(0.0f,
                         -9.8f, 0.0f));*/
 
-        GVRSceneObject groundScene = quadWithTexture(300.0f, 300.0f, "floor.jpg");
+        /*GVRSceneObject groundScene = quadWithTexture(300.0f, 300.0f, "floor.jpg");
         groundScene.getTransform().setRotationByAxis(-90.0f, 1.0f, 0.0f, 0.0f);
         groundScene.getTransform().setPosition(0.0f, 0.0f, 0.0f);
-        mainSceneObject.addChildObject(groundScene);
+        mainSceneObject.addChildObject(groundScene);*/
 
         /*StaticPlaneShape floorShape = new StaticPlaneShape(new Vector3(0.0f,
                 1.0f, 0.0f), 0.0f);
@@ -128,7 +151,7 @@ public class FEViewManager extends GVRScript {
         /*FETimerTask task = new FETimerTask();
         Timer timer = new Timer(true);
         timer.scheduleAtFixedRate(task, 0, 10 * 1000);*/
-
+		_throwObject();
 	}
 
     /*public class FETimerTask extends TimerTask {
@@ -158,20 +181,25 @@ public class FEViewManager extends GVRScript {
         {
             public void run() {
                 try {
-                    GVRSceneObject object = asyncSceneObject(mGVRContext, "cube.obj", "cube.jpg");
-                    throwAnObject(object);
+                    throwAnObject();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         };
-        long twoSec = 2 * 1000;
-        timer.schedule(gameOver, twoSec);
+        int THROW_OBJECT_RATE_MIN = 2 * 1000;
+        int THROW_OBJECT_RATE_MAX = 4 * 1000;
+        int THROW_OBJECT_DELAY_MIN = 2 * 1000;
+        int THROW_OBJECT_DELAY_MAX = 4 * 1000;
+        timer.scheduleAtFixedRate(gameOver,
+                randomInRange(THROW_OBJECT_DELAY_MIN, THROW_OBJECT_DELAY_MAX),
+                randomInRange(THROW_OBJECT_RATE_MIN, THROW_OBJECT_RATE_MAX));
     }
 
     public void gameOver()
     {
         gameStart = false;
+
     }
 
 	private void setDisplayMessage(String str, float width, float height, int color, int textSize) {
@@ -213,12 +241,30 @@ public class FEViewManager extends GVRScript {
 
 	}
 
+    private int MIN_GAME_WIDTH = -10;
+    private int MAX_GAME_WIDTH = 10;
+    private int MIN_GAME_HEIGHT_START = 5;
+    private int MAX_GAME_HEIGHT_START = 7;
+    private int MIN_GAME_HEIGHT_REACH = 5;
+    private int MAX_GAME_HEIGHT_REACH = 7;
+    private int MIN_SPEED = 2;
+    private int MAX_SPEED = 0;
 
-    public void throwAnObject(GVRSceneObject object) throws IOException {
-		object.getTransform().setPosition(2, 6, -25);
+    public void throwAnObject() throws IOException {
+        GVRSceneObject object = asyncSceneObject(mGVRContext, "hotdog.obj", "hotdog.png");
+		object.getTransform().setPosition(
+                randomInRangeFloat(MIN_GAME_WIDTH, MAX_GAME_WIDTH),
+                randomInRangeFloat(MIN_GAME_HEIGHT_START, MAX_GAME_HEIGHT_START),
+                -20);
 		mainSceneObject.addChildObject(object);
+        mObjects.add(object);
 
-        relativeMotionAnimation(object, 4, 0, 0, -(object.getTransform().getPositionZ() + 2));
+        //relativeMotionAnimation(object, randomInRange(MIN_SPEED, MAX_SPEED), 0, 0, -(object.getTransform().getPositionZ() + 1));
+        relativeMotionAnimation(object,
+                randomInRange(MIN_SPEED, MAX_SPEED),
+                0,
+                0,
+                -(object.getTransform().getPositionZ() + 1));
     }
 
 	@Override
@@ -237,23 +283,31 @@ public class FEViewManager extends GVRScript {
             }
         }*/
 
-		/*mMainScene.getMainCameraRig()
+        for (int i = 0; i < mObjects.size(); i++) {
+            if(mObjects.get(i) != null) {
+                if (mObjects.get(i).isColliding(headTracker)) {
+                    mainSceneObject.removeChildObject(mObjects.get(i));
+                    mObjects.remove(i);
+                }
+            }
+        }
+
+		mMainScene.getMainCameraRig()
 		.getTransform()
 		.setPosition(getXLinearDistance(
-				mMainScene.getMainCameraRig().getHeadTransform().getRotationYaw()), 
+				mMainScene.getMainCameraRig().getHeadTransform().getRotationRoll()),
 				mMainScene.getMainCameraRig().getTransform().getPositionY(), 
-				mMainScene.getMainCameraRig().getTransform().getPositionZ());*/
-		/*Log.d(TAG, "Yaw: %f, %f", mMainScene.getMainCameraRig().getTransform().getPositionY(), 
-				mMainScene.getMainCameraRig().getHeadTransform().getRotationYaw());*/
+				mMainScene.getMainCameraRig().getTransform().getPositionZ());
+		//Log.d(TAG, "Roll: %f", mMainScene.getMainCameraRig().getHeadTransform().getRotationRoll());
 
 	}
 	
-	private float minLinearX = -5.0f;
-	private float maxLinearX = 5.0f;
+	private float minLinearX = -10.0f;
+	private float maxLinearX = 10.0f;
 	private float yawToLinearScale = 0.25f;
-	
-	private float getXLinearDistance(float headRotationYaw) {
-		float val = headRotationYaw * yawToLinearScale;
+
+	private float getXLinearDistance(float headRotationRoll) {
+		float val = headRotationRoll * yawToLinearScale;
 
 		if(val < minLinearX) 		return -minLinearX;
 		else if(val > maxLinearX)	return -maxLinearX;
@@ -283,7 +337,7 @@ public class FEViewManager extends GVRScript {
 		case MotionEvent.ACTION_UP:
 			if (isOnClick) {
                 gameStart = true;
-                _throwObject();
+                //_throwObject();
                 /*mBullet.applyForce(boxBody, new Vector3(randomInRange(-50,50),randomInRange(-50,50),randomInRange(-50,100)), new Vector3(randomInRange(-50,100),randomInRange(0,90),randomInRange(-25,-1)));
                 mBullet.applyImpulse(boxBody, new Vector3(randomInRange(-50,50),randomInRange(-50,50),randomInRange(-50,100)), new Vector3(randomInRange(-50,100),randomInRange(0,90),randomInRange(-25,-1)));
                 mBullet.applyCentralImpulse(boxBody, new Vector3(randomInRange(-50,50),randomInRange(-50,50),randomInRange(-50,100)));*/

@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/FastEater.iml" filepath="$PROJECT_DIR$/FastEater.iml" />
+      <module fileurl="file://$PROJECT_DIR$/FastEater_AS.iml" filepath="$PROJECT_DIR$/FastEater_AS.iml" />
       <module fileurl="file://$PROJECT_DIR$/SystemUtils/SystemUtils.iml" filepath="$PROJECT_DIR$/SystemUtils/SystemUtils.iml" />
       <module fileurl="file://$PROJECT_DIR$/VrApi/VrApi.iml" filepath="$PROJECT_DIR$/VrApi/VrApi.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
