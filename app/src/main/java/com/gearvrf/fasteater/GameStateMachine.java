@@ -10,7 +10,11 @@ import java.util.Random;
 public class GameStateMachine {
 
     public enum GameStatus {
-        WELCOME_SCREEN, IN_PROCESS
+        STATE_BOOT_ANIMATION,
+        STATE_GAME_LOAD,
+        STATE_GAME_STARTED,
+        STATE_GAME_IN_PROGRESS,
+        STATE_GAME_END
     }
 
     private Player player;
@@ -62,7 +66,7 @@ public class GameStateMachine {
 
         currentLevel = 1;
 
-        setStatus(GameStatus.WELCOME_SCREEN);
+        setStatus(GameStatus.STATE_BOOT_ANIMATION);
 
         flyingItems = new ArrayList<FlyingItem>();
         FlyingItem hamburger = new FlyingItem("hamburger", "hamburger.obj", 10);
@@ -75,7 +79,7 @@ public class GameStateMachine {
 
     public void startGame() {
 
-        setStatus(GameStatus.IN_PROCESS);
+        setStatus(GameStatus.STATE_GAME_STARTED);
     }
 
     public void stopGame() {
