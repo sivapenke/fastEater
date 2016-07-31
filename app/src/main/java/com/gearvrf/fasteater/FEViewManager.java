@@ -9,8 +9,10 @@ import android.view.MotionEvent;
 import org.gearvrf.FutureWrapper;
 import org.gearvrf.GVRAndroidResource;
 import org.gearvrf.GVRBitmapTexture;
+import org.gearvrf.GVRCollider;
 import org.gearvrf.GVRContext;
 import org.gearvrf.GVRMesh;
+import org.gearvrf.GVRMeshCollider;
 import org.gearvrf.GVRRenderData;
 import org.gearvrf.GVRRenderData.GVRRenderingOrder;
 import org.gearvrf.GVRScene;
@@ -168,6 +170,45 @@ public class FEViewManager extends GVRScript {
         return textMessageObject;
     }
 
+    private GVRTextViewSceneObject makeScoreboard(GVRContext ctx, GVRSceneObject parent)
+    {
+        GVRTextViewSceneObject scoreBoard = new GVRTextViewSceneObject(ctx, 2.0f, 1.5f, "000");
+
+        GVRRenderData rdata = scoreBoard.getRenderData();
+        GVRCollider collider = new GVRMeshCollider(ctx, true);
+
+        collider.setEnable(false);
+        scoreBoard.attachComponent(collider);
+        scoreBoard.setTextColor(Color.YELLOW);
+        scoreBoard.setTextSize(8);
+        scoreBoard.setBackgroundColor(Color.argb(0, 0, 0, 0));
+        scoreBoard.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);
+        rdata.setDepthTest(false);
+        rdata.setAlphaBlend(true);
+        rdata.setRenderingOrder(GVRRenderingOrder.OVERLAY);
+        parent.addChildObject(scoreBoard);
+        return scoreBoard;
+    }
+
+    private GVRTextViewSceneObject makeLivesLeft(GVRContext ctx, GVRSceneObject parent)
+    {
+        GVRTextViewSceneObject livesLeft = new GVRTextViewSceneObject(ctx, 5.3f, 1.5f, "Lives: 3");
+        livesLeft.setTextSize(7);
+        GVRRenderData rdata = livesLeft.getRenderData();
+        GVRCollider collider = new GVRMeshCollider(ctx, true);
+
+        collider.setEnable(false);
+        livesLeft.attachComponent(collider);
+        livesLeft.setTextColor(Color.YELLOW);
+        livesLeft.setBackgroundColor(Color.argb(0, 0, 0, 0));
+        livesLeft.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);
+        rdata.setDepthTest(false);
+        rdata.setAlphaBlend(true);
+        rdata.setRenderingOrder(GVRRenderingOrder.OVERLAY);
+        parent.addChildObject(livesLeft);
+        return livesLeft;
+    }
+
 	private GVRSceneObject quadWithTexture(float width, float height, String texture) {
 		FutureWrapper<GVRMesh> futureMesh = new FutureWrapper<GVRMesh>(mGVRContext.createQuad(width, height));
 		GVRSceneObject object = null;
@@ -278,6 +319,8 @@ public class FEViewManager extends GVRScript {
                                     playSound(AudioClip.getUISoundEatID(), 1.0f, 1.0f);
                             ovrEater.incrementScore(10);
                         }
+                        scoreTextMessageObject.setText(String.format("%03d", ovrEater.getCurrentScore()));
+                        livesTextMessageObject.setText("Lives: " + ovrEater.getNumLivesRemaining());
                         mainSceneObject.removeChildObject(mObjects.get(i).getSceneObject());
                         mObjects.remove(i);
                         try {
@@ -372,6 +415,10 @@ public class FEViewManager extends GVRScript {
 			if (isOnClick && (gameState.getStatus() == GameStateMachine.GameStatus.STATE_GAME_END ||
                     gameState.getStatus() == GameStateMachine.GameStatus.STATE_GAME_IN_PROGRESS)) {
 
+                if (gameState.getStatus() == GameStateMachine.GameStatus.STATE_GAME_END) {
+                    gameState.setScore(0);
+                }
+
                 gameState.setStatus(GameStateMachine.GameStatus.STATE_GAME_IN_PROGRESS);
                 AudioClip.getInstance(mGVRContext.getContext()).
                         playLoop(AudioClip.getUISoundBGID(), 0.8f, 0.8f);
@@ -379,6 +426,14 @@ public class FEViewManager extends GVRScript {
                     mainSceneObject.removeChildObject(tapTOStart);
 
                 showMouthPointer(true);
+                if (scoreTextMessageObject == null) {
+                    scoreTextMessageObject = makeScoreboard(mGVRContext, headTracker);
+                }
+                scoreTextMessageObject.getTransform().setPosition(-1.2f, 1.2f, -2.2f);
+                if (livesTextMessageObject == null) {
+                    livesTextMessageObject = makeLivesLeft(mGVRContext, headTracker);
+                }
+                livesTextMessageObject.getTransform().setPosition(1.2f, 1.2f, -2.2f);
                 _throwObject();
 			} else if(ovrEater.isDead()) {
                 AudioClip.getInstance(mGVRContext.getContext()).
@@ -414,10 +469,12 @@ public class FEViewManager extends GVRScript {
 		runOnce(new GVRScaleAnimation(object, duration, x, y, z));
 	}
 
+    /*
 	private void startSpaceShip(GVRSceneObject object, float duration) {
 
 	}
-	
+	*/
+
 	private void relativeMotionAnimation(GVRSceneObject object, float duration, float x, float y, float z) {
 		runOnce(new GVRRelativeMotionAnimation(object, duration, x, y, z));
 	}
