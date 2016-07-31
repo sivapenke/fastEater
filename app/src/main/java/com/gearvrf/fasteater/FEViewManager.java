@@ -52,9 +52,9 @@ public class FEViewManager extends GVRScript {
 	private GVRScene mMainScene;
 	private GVRContext mGVRContext;
 	private GVRSceneObject mainSceneObject, headTracker, astronautMeshObject;
-	private GVRTextViewSceneObject textMessageObject;
+	private GVRTextViewSceneObject textMessageObject, scoreTextMessageObject, livesTextMessageObject, tapTOStart;
 	private GVRSceneObject burger;
-	private List<GVRSceneObject> mObjects = new ArrayList<GVRSceneObject>();
+	private List<FlyingItem> mObjects = new ArrayList<FlyingItem>();
     private Bullet mBullet = null;
     private static final float OBJECT_MASS = 0.5f;
     private RigidBody boxBody;
@@ -62,6 +62,8 @@ public class FEViewManager extends GVRScript {
     private Map<RigidBody, GVRSceneObject> rigidBodiesSceneMap = new HashMap<RigidBody, GVRSceneObject>();
     private Timer timer;
     private GameStateMachine gameState;
+    private GVRSceneObject homeButton, pauseButton, timerButton;
+    private Player ovrEater;
 
 	private GVRSceneObject asyncSceneObject(GVRContext context, String meshName, String textureName)
 			throws IOException {
@@ -72,8 +74,6 @@ public class FEViewManager extends GVRScript {
 	@Override
 	public void onInit(GVRContext gvrContext) throws IOException, InterruptedException {
         gameState = new GameStateMachine();
-        gameState.setStatus(GameStateMachine.GameStatus.STATE_BOOT_ANIMATION);
-
 		mGVRContext = gvrContext;
 		mAnimationEngine = mGVRContext.getAnimationEngine();
 		mMainScene = mGVRContext.getNextMainScene();
@@ -92,9 +92,11 @@ public class FEViewManager extends GVRScript {
     }
 
     private void loadGameScene(GVRContext context, GVRScene scene) throws IOException {
-        gameState.setStatus(GameStateMachine.GameStatus.STATE_GAME_LOAD);
+        gameState.setStatus(GameStateMachine.GameStatus.STATE_GAME_IN_PROGRESS);
         // load all audio files. TODO: change this to spacial Audio
         AudioClip.getInstance(context.getContext());
+
+        ovrEater = new Player();
 
         mainSceneObject = new GVRSceneObject(context);
         mMainScene.addSceneObject(mainSceneObject);
@@ -115,14 +117,6 @@ public class FEViewManager extends GVRScript {
         mainSceneObject.addChildObject(leftScreen);
         mainSceneObject.addChildObject(rightScreen);
 
-        // add head-tracking pointer
-        headTracker = new GVRSceneObject(context, new FutureWrapper<GVRMesh>(context.createQuad(0.5f, 0.5f)),
-                context.loadFutureTexture(new GVRAndroidResource(context, "mouth_open.png")));
-        headTracker.getTransform().setPosition(0.0f, 0.0f, -2.0f);
-        headTracker.getRenderData().setDepthTest(false);
-        headTracker.getRenderData().setRenderingOrder(100000);
-        mMainScene.getMainCameraRig().addChildObject(headTracker);
-
         /*mBullet = new Bullet();
         mBullet.createPhysicsWorld(new Vector3(-480.0f, -480.0f, -480.0f),
                 new Vector3(480.0f, 480.0f, 480.0f), 1024, new Vector3(0.0f,
@@ -135,12 +129,16 @@ public class FEViewManager extends GVRScript {
         MotionState floorState = new MotionState();
         mBullet.createAndAddRigidBody(floorGeometry, floorState);*/
 
-        //setDisplayMessage("Welcome to FastEater", 2, 1, Color.BLACK, 10);
+        //setScoreMessage("Score: ", 2, 1, Color.BLUE, 25);
+        //setLivesMessage("Lives: ", 2, 1, Color.BLUE, 25);
+
+        //setDisplayMessage("text_background.png");
+        tapTOStart = setInfoMessage("Tap to start");
+        mainSceneObject.addChildObject(tapTOStart);
 
         /*FETimerTask task = new FETimerTask();
         Timer timer = new Timer(true);
         timer.scheduleAtFixedRate(task, 0, 10 * 1000);*/
-        _throwObject();
     }
 
     /*public class FETimerTask extends TimerTask {
@@ -150,6 +148,25 @@ public class FEViewManager extends GVRScript {
 
         }
     }*/
+
+    private GVRTextViewSceneObject setInfoMessage(String str)
+    {
+        GVRTextViewSceneObject textMessageObject = new GVRTextViewSceneObject(mGVRContext, 4, 2, str);
+        textMessageObject.setTextColor(Color.BLACK);
+        textMessageObject.setGravity(Gravity.CENTER);
+        textMessageObject.setKeepWrapper(true);
+        textMessageObject.setTextSize(20);
+        textMessageObject.setBackgroundColor(Color.TRANSPARENT);
+        textMessageObject.setRefreshFrequency(IntervalFrequency.HIGH);
+        textMessageObject.getTransform().setPosition(0.0f, 6.0f, -6.0f);
+        textMessageObject.getTransform().rotateByAxisWithPivot(0, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+
+        GVRRenderData renderData = textMessageObject.getRenderData();
+        renderData.setRenderingOrder(GVRRenderingOrder.TRANSPARENT);
+        renderData.setDepthTest(false);
+
+        return textMessageObject;
+    }
 
 	private GVRSceneObject quadWithTexture(float width, float height, String texture) {
 		FutureWrapper<GVRMesh> futureMesh = new FutureWrapper<GVRMesh>(mGVRContext.createQuad(width, height));
@@ -163,10 +180,12 @@ public class FEViewManager extends GVRScript {
 		return object;
 	}
 
+    private int MAX_THROW = 15;
+
     private void _throwObject()
     {
         Timer timer = new Timer();
-        TimerTask gameOver = new TimerTask()
+        TimerTask task = new TimerTask()
         {
             public void run() {
                 try {
@@ -179,57 +198,16 @@ public class FEViewManager extends GVRScript {
                 }
             }
         };
-        int THROW_OBJECT_RATE_MIN = 2 * 1000;
-        int THROW_OBJECT_RATE_MAX = 4 * 1000;
-        int THROW_OBJECT_DELAY_MIN = 2 * 1000;
-        int THROW_OBJECT_DELAY_MAX = 4 * 1000;
-        timer.scheduleAtFixedRate(gameOver,
+        int THROW_OBJECT_RATE_MIN = 1 * 1000;
+        int THROW_OBJECT_RATE_MAX = 3 * 1000;
+        int THROW_OBJECT_DELAY_MIN = 1 * 1000;
+        int THROW_OBJECT_DELAY_MAX = 3 * 1000;
+        timer.scheduleAtFixedRate(task,
                 Helper.randomInRange(THROW_OBJECT_DELAY_MIN, THROW_OBJECT_DELAY_MAX),
                 Helper.randomInRange(THROW_OBJECT_RATE_MIN, THROW_OBJECT_RATE_MAX));
+
+        //timeElapsed = System.currentTimeMillis();
     }
-
-    public void gameOver()
-    {
-        gameStart = false;
-    }
-
-	private void setDisplayMessage(String str, float width, float height, int color, int textSize) {
-		textMessageObject = new GVRTextViewSceneObject(mGVRContext, width, height, str);
-		textMessageObject.setTextColor(color);
-		textMessageObject.setGravity(Gravity.CENTER);
-		textMessageObject.setKeepWrapper(true);
-		textMessageObject.setTextSize(textSize);
-		textMessageObject.setBackgroundColor(Color.TRANSPARENT);
-		textMessageObject.setRefreshFrequency(IntervalFrequency.HIGH);
-		textMessageObject.getTransform().setPosition(0.0f, 6.0f, -6.0f);
-		textMessageObject.getTransform().rotateByAxisWithPivot(0, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-
-		GVRRenderData renderData = textMessageObject.getRenderData();
-		renderData.setRenderingOrder(GVRRenderingOrder.TRANSPARENT);
-		renderData.setDepthTest(false);
-
-		mainSceneObject.addChildObject(textMessageObject);
-	}
-
-	private void throwAnObjectPhysics() throws IOException {
-		/*burger = asyncSceneObject(mGVRContext, "sphere.obj", "space7.jpg");
-		burger.getTransform().setPosition(2, 6, -25);
-		mainSceneObject.addChildObject(burger);*/
-
-        BoxShape boxShape = new BoxShape(new Vector3(0.5f, 0.5f, 0.5f));
-        Geometry boxGeometry = mBullet.createGeometry(boxShape, OBJECT_MASS,
-                new Vector3(0.0f, 0.0f, 0.0f));
-        MotionState boxState = new MotionState();
-        boxState.worldTransform = new Transform(new Point3(1, 2, -11));
-        boxBody = mBullet.createAndAddRigidBody(boxGeometry, boxState);
-
-        burger = asyncSceneObject(mGVRContext, "cube.obj", "cube.jpg");
-
-        burger.getTransform().setPosition(2, 6, -25);
-        mainSceneObject.addChildObject(burger);
-        rigidBodiesSceneMap.put(boxBody, burger);
-
-	}
 
     private int MIN_GAME_WIDTH = -10;
     private int MAX_GAME_WIDTH = 10;
@@ -241,76 +219,122 @@ public class FEViewManager extends GVRScript {
     private int MAX_SPEED = 0;
 
     private String[][] OverEatObjects = new String[][]{
-            { "hotdog.obj", "hotdog.png" },
-            { "hamburger.obj", "hamburger.png" },
-            { "bomb.obj", "bomb.png" },
-            { "sodacan.obj", "sodacan.png" },
+            { "hotdog.obj", "hotdog.png", "hotdog" },
+            { "hamburger.obj", "hamburger.png", "hamburger" },
+            { "bomb.obj", "bomb.png", "bomb" },
+            { "sodacan.obj", "sodacan.png", "sodacan" }
     };
 
-    private int MAX_THROW = 5;
-
     public void throwAnObject() throws IOException {
-        int rand_index = Helper.randomNextInt(OverEatObjects.length);
-        GVRSceneObject object = asyncSceneObject(mGVRContext, OverEatObjects[rand_index][0], OverEatObjects[rand_index][1]);
-		object.getTransform().setPosition(
-                Helper.randomInRangeFloat(MIN_GAME_WIDTH, MAX_GAME_WIDTH),
-                Helper.randomInRangeFloat(MIN_GAME_HEIGHT_START, MAX_GAME_HEIGHT_START),
-                -20);
-		mainSceneObject.addChildObject(object);
-        mObjects.add(object);
+        if(!ovrEater.isDead()) {
+            int rand_index = Helper.randomNextInt(OverEatObjects.length);
+            GVRSceneObject object = asyncSceneObject(mGVRContext, OverEatObjects[rand_index][0], OverEatObjects[rand_index][1]);
+            FlyingItem item = new FlyingItem(OverEatObjects[rand_index][2], object);
+            object.getTransform().setPosition(
+                    Helper.randomInRangeFloat(MIN_GAME_WIDTH, MAX_GAME_WIDTH),
+                    Helper.randomInRangeFloat(MIN_GAME_HEIGHT_START, MAX_GAME_HEIGHT_START),
+                    -20);
+            mainSceneObject.addChildObject(object);
+            mObjects.add(item);
 
-        relativeMotionAnimation(object,
-                Helper.randomInRange(MIN_SPEED, MAX_SPEED),
-                0,
-                0,
-                -(object.getTransform().getPositionZ() - 10));
+            relativeMotionAnimation(object,
+                    Helper.randomInRange(MIN_SPEED, MAX_SPEED),
+                    0,
+                    0,
+                    -(object.getTransform().getPositionZ() - 10));
+        }
     }
 
 	@Override
 	public void onStep() {
-        /*mBullet.doSimulation(1.0f / 60.0f, 10);
-        for (RigidBody body : rigidBodiesSceneMap.keySet()) {
-            if (body.geometry.shape.getType() == ShapeType.SPHERE_SHAPE_PROXYTYPE
-                    || body.geometry.shape.getType() == ShapeType.BOX_SHAPE_PROXYTYPE) {
-                rigidBodiesSceneMap
-                        .get(body)
-                        .getTransform()
-                        .setPosition(
-                                body.motionState.resultSimulation.originPoint.x,
-                                body.motionState.resultSimulation.originPoint.y,
-                                body.motionState.resultSimulation.originPoint.z);
-            }
-        }*/
-
-        for (int i = 0; i < mObjects.size(); i++) {
-            if(mObjects.get(i) != null && mObjects.get(i).getRenderData().getMesh() != null) {
-                if (mObjects.get(i).isColliding(headTracker) ||
-                        (mObjects.get(i).getTransform().getPositionZ() >
-                                mMainScene.getMainCameraRig().getTransform().getPositionZ())) {
-                    mainSceneObject.removeChildObject(mObjects.get(i));
-                    mObjects.remove(i);
-                    try {
-                        headTracker.getRenderData().getMaterial().setMainTexture(
-                                mGVRContext.loadFutureTexture(new GVRAndroidResource(mGVRContext, "mouth_close.png")));
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+        if(ovrEater.isDead() && gameState.getStatus() == GameStateMachine.GameStatus.STATE_GAME_IN_PROGRESS) {
+            playerDead();
+        } else if(gameState.getStatus() == GameStateMachine.GameStatus.STATE_GAME_IN_PROGRESS) {
+            for (int i = 0; i < mObjects.size(); i++) {
+                try {
+                    headTracker.getRenderData().getMaterial().setMainTexture(
+                            mGVRContext.loadFutureTexture(new GVRAndroidResource(mGVRContext, "mouth_open.png")));
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
+                if (mObjects.get(i) != null && mObjects.get(i).getSceneObject().getRenderData().getMesh() != null) {
+                    if (mObjects.get(i).getSceneObject().isColliding(headTracker)) {
+                        //Log.e(TAG, "mObjects.get(i).getName: Penke " + mObjects.get(i).getName() + "score" + ovrEater.getCurrentScore());
+                        if (mObjects.get(i).getName().compareTo("bomb") == 0) {
+                            ovrEater.loseALife();
+                            AudioClip.getInstance(mGVRContext.getContext()).
+                                    playSound(AudioClip.getUISoundGrenadeID(), 1.0f, 1.0f);
+                            Log.e(TAG, "remaining Lives Penke " + ovrEater.getNumLivesRemaining());
+                        } else if (mObjects.get(i).getName().compareTo("burger") == 0) {
+                            AudioClip.getInstance(mGVRContext.getContext()).
+                                    playSound(AudioClip.getUISoundEatID(), 1.0f, 1.0f);
+                            ovrEater.incrementScore(50);
+                        } else if (mObjects.get(i).getName().compareTo("hotdog") == 0) {
+                            AudioClip.getInstance(mGVRContext.getContext()).
+                                    playSound(AudioClip.getUISoundEatID(), 1.0f, 1.0f);
+                            ovrEater.incrementScore(30);
+                        } else if (mObjects.get(i).getName().compareTo("sodacan") == 0) {
+                            AudioClip.getInstance(mGVRContext.getContext()).
+                                    playSound(AudioClip.getUISoundEatID(), 1.0f, 1.0f);
+                            ovrEater.incrementScore(10);
+                        }
+                        mainSceneObject.removeChildObject(mObjects.get(i).getSceneObject());
+                        mObjects.remove(i);
+                        try {
+                            headTracker.getRenderData().getMaterial().setMainTexture(
+                                    mGVRContext.loadFutureTexture(new GVRAndroidResource(mGVRContext, "mouth_close.png")));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    } else if (mObjects.get(i).getSceneObject().getTransform().getPositionZ() >
+                            mMainScene.getMainCameraRig().getTransform().getPositionZ()) {
+                        mainSceneObject.removeChildObject(mObjects.get(i).getSceneObject());
+                        mObjects.remove(i);
+                    }
 
+                }
             }
+
+            mMainScene.getMainCameraRig()
+                    .getTransform()
+                    .setPosition(getXLinearDistance(
+                            mMainScene.getMainCameraRig().getHeadTransform().getRotationRoll()),
+                            mMainScene.getMainCameraRig().getTransform().getPositionY(),
+                            mMainScene.getMainCameraRig().getTransform().getPositionZ());
         }
-        //mBullet.applyCentralImpulse();
-        //mBullet.setactive - true
-
-		mMainScene.getMainCameraRig()
-		.getTransform()
-		.setPosition(getXLinearDistance(
-				mMainScene.getMainCameraRig().getHeadTransform().getRotationRoll()),
-				mMainScene.getMainCameraRig().getTransform().getPositionY(), 
-				mMainScene.getMainCameraRig().getTransform().getPositionZ());
-		//Log.d(TAG, "Roll: %f", mMainScene.getMainCameraRig().getHeadTransform().getRotationRoll());
-
 	}
+
+    private void playerDead() {
+        //stop throwing burgers
+        //show score board
+        //display click to start again
+            /*setInfoMessage(String
+                    .format("Score %d", ovrEater.getCurrentScore()));*/
+        gameState.setStatus(GameStateMachine.GameStatus.STATE_GAME_END);
+        showMouthPointer(false);
+        tapTOStart = setInfoMessage("Tap to start");
+        mainSceneObject.addChildObject(tapTOStart);
+        timer.cancel();
+    }
+
+    private void showMouthPointer(Boolean enable) {
+        if(enable) {
+            // add head-tracking pointer
+            try {
+                headTracker = new GVRSceneObject(mGVRContext, new FutureWrapper<GVRMesh>(mGVRContext.createQuad(0.5f, 0.5f)),
+                        mGVRContext.loadFutureTexture(new GVRAndroidResource(mGVRContext, "mouth_open.png")));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            headTracker.getTransform().setPosition(0.0f, 0.0f, -2.0f);
+            headTracker.getRenderData().setDepthTest(false);
+            headTracker.getRenderData().setRenderingOrder(100000);
+            mMainScene.getMainCameraRig().addChildObject(headTracker);
+        } else {
+            if(headTracker != null)
+                mainSceneObject.removeChildObject(headTracker);
+        }
+    }
 	
 	private float minLinearX = -12.0f;
 	private float maxLinearX = 12.0f;
@@ -345,17 +369,23 @@ public class FEViewManager extends GVRScript {
 			break;
 		case MotionEvent.ACTION_CANCEL:
 		case MotionEvent.ACTION_UP:
-			if (isOnClick) {
-                gameStart = true;
-                //_throwObject();
-                /*mBullet.applyForce(boxBody, new Vector3(randomInRange(-50,50),randomInRange(-50,50),randomInRange(-50,100)), new Vector3(randomInRange(-50,100),randomInRange(0,90),randomInRange(-25,-1)));
-                mBullet.applyImpulse(boxBody, new Vector3(randomInRange(-50,50),randomInRange(-50,50),randomInRange(-50,100)), new Vector3(randomInRange(-50,100),randomInRange(0,90),randomInRange(-25,-1)));
-                mBullet.applyCentralImpulse(boxBody, new Vector3(randomInRange(-50,50),randomInRange(-50,50),randomInRange(-50,100)));*/
-				/*relativeMotionAnimation(burger, 4,
-						0,
-						0,
-						-(burger.getTransform().getPositionZ() + 2));*/
-			}
+			if (isOnClick && (gameState.getStatus() == GameStateMachine.GameStatus.STATE_GAME_END ||
+                    gameState.getStatus() == GameStateMachine.GameStatus.STATE_GAME_IN_PROGRESS)) {
+
+                gameState.setStatus(GameStateMachine.GameStatus.STATE_GAME_IN_PROGRESS);
+                AudioClip.getInstance(mGVRContext.getContext()).
+                        playLoop(AudioClip.getUISoundBGID(), 0.8f, 0.8f);
+                if(tapTOStart != null)
+                    mainSceneObject.removeChildObject(tapTOStart);
+
+                showMouthPointer(true);
+                _throwObject();
+			} else if(ovrEater.isDead()) {
+                AudioClip.getInstance(mGVRContext.getContext()).
+                        stopSound(AudioClip.getUISoundBGID());
+                showMouthPointer(false);
+                gameState.setStatus(GameStateMachine.GameStatus.STATE_GAME_END);
+            }
 			break;
 		case MotionEvent.ACTION_MOVE:
 			break;

@@ -21,7 +21,7 @@ public class GameStateMachine {
     private List<FlyingItem> flyingItems;
     private Random random;
     private int currentLevel;
-    private GameStatus status;
+    private GameStatus status = GameStatus.STATE_GAME_END;
 
     public GameStateMachine() {
 
@@ -62,19 +62,7 @@ public class GameStateMachine {
      * Restart a new game. Reset all status back to the beginning
      */
     public void restartGame() {
-        player = new Player();
 
-        currentLevel = 1;
-
-        setStatus(GameStatus.STATE_BOOT_ANIMATION);
-
-        flyingItems = new ArrayList<FlyingItem>();
-        FlyingItem hamburger = new FlyingItem("hamburger", "hamburger.obj", 10);
-        flyingItems.add(hamburger);
-        FlyingItem hotdog = new FlyingItem("hotdog", "hotdog.obj", 5);
-        flyingItems.add(hotdog);
-        FlyingItem bomb = new FlyingItem("bomb", "bomb.obj", -1);
-        flyingItems.add(bomb);
     }
 
     public void startGame() {
@@ -100,24 +88,5 @@ public class GameStateMachine {
     // TODO: probably not run() / while, but callbacks to change state
     public void run() {
 
-        while (!player.isDead()) {
-
-            int itemIndex = random.nextInt(flyingItems.size());
-            FlyingItem currentItem = flyingItems.get(itemIndex);
-
-            // TODO: display item
-
-            // TODO: determine if player catches the item, or avoids it
-
-            boolean userCaughtItem = true; // TODO: set dynamically !
-
-            if (currentItem.isBomb() && userCaughtItem) {
-                player.loseALife();
-            } else {
-                player.incrementScore(currentItem.getPointValue());
-            }
-
-            // TODO: update display of score board
-        }
     }
 }

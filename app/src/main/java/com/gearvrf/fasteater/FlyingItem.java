@@ -1,5 +1,7 @@
 package com.gearvrf.fasteater;
 
+import org.gearvrf.GVRSceneObject;
+
 /**
  * Created by b1.miller on 7/29/2016.
  */
@@ -14,27 +16,15 @@ public class FlyingItem {
 
     private String name;
     private String assetFilename;
-    private int pointValue;
-//    private int speed;
+
+    private GVRSceneObject object;
     private ItemStatus currentStatus;
 
-    public FlyingItem(String name, String assetFilename, int pointValue) {
+    public FlyingItem(String name, GVRSceneObject object) {
         this.name = name;
-        this.assetFilename = assetFilename;
-        this.pointValue = pointValue;
-  //      this.speed = DEFAULT_SPEED;
+        this.object = object;
         this.currentStatus = ItemStatus.HIDDEN;
     }
-
-    /*
-    public int getSpeed() {
-        return speed;
-    }
-
-    public void setSpeed(int speed) {
-        this.speed = speed;
-    }
-*/
 
     public String getName() {
         return name;
@@ -44,16 +34,12 @@ public class FlyingItem {
         this.name = name;
     }
 
-    public int getPointValue() {
-        return pointValue;
+    public GVRSceneObject getSceneObject() {
+        return object;
     }
 
-    public void setPointValue(int pointValue) {
-        this.pointValue = pointValue;
-    }
-
-    public boolean isBomb() {
-        return (pointValue < 0);
+    public void setSceneObject(GVRSceneObject object) {
+        this.object = object;
     }
 
     public ItemStatus getCurrentStatus() {
