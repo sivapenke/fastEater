@@ -29,7 +29,7 @@ public class AudioClip {
 
     private Context context;
     private SoundPool soundPool;
-    private static int uiSoundTypingID, uiSoundShootingID, uiSoundBGID, uiSoundEatID, uiSoundGrenadeID;
+    private static int uiSoundDrinkID, uiSoundBGID, uiSoundEatID, uiSoundGrenadeID;
 
     public static synchronized AudioClip getInstance(Context androidContext) {
         if (instance == null) {
@@ -86,19 +86,18 @@ public class AudioClip {
     }
 
     private void loadinSounds() {
-    	//uiSoundTypingID = soundPool.load(context, R.raw.typing, 1);
-    	//uiSoundShootingID = soundPool.load(context, R.raw.laser, 1);
-        uiSoundBGID = soundPool.load(context, R.raw.burger_surfer, 1);
-        uiSoundEatID = soundPool.load(context, R.raw.laser, 1);
-        uiSoundGrenadeID = soundPool.load(context, R.raw.grenade1, 1);
-    }
-
-    public static int getUISoundTypingID() {
-        return uiSoundTypingID;
+        uiSoundBGID = soundPool.load(context, R.raw.citymusic, 1);
+        uiSoundEatID = soundPool.load(context, R.raw.splat, 1);
+        uiSoundDrinkID = soundPool.load(context, R.raw.slrup, 1);
+        uiSoundGrenadeID = soundPool.load(context, R.raw.bomb, 1);
     }
 
     public static int getUISoundBGID() {
         return uiSoundBGID;
+    }
+
+    public static int getUISoundDrinkID() {
+        return uiSoundDrinkID;
     }
 
     public static int getUISoundEatID() {
@@ -108,10 +107,5 @@ public class AudioClip {
     public static int getUISoundGrenadeID() {
         return uiSoundGrenadeID;
     }
-    
-    public static int getUISoundShootingID() {
-        return uiSoundShootingID;
-    }
-
 
 }

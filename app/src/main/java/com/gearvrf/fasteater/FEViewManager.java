@@ -11,6 +11,7 @@ import org.gearvrf.GVRAndroidResource;
 import org.gearvrf.GVRBitmapTexture;
 import org.gearvrf.GVRCollider;
 import org.gearvrf.GVRContext;
+import org.gearvrf.GVRMaterial;
 import org.gearvrf.GVRMesh;
 import org.gearvrf.GVRMeshCollider;
 import org.gearvrf.GVRRenderData;
@@ -20,6 +21,7 @@ import org.gearvrf.GVRSceneObject;
 import org.gearvrf.GVRScript;
 import org.gearvrf.GVRTexture;
 import org.gearvrf.GVRTransform;
+import org.gearvrf.ZipLoader;
 import org.gearvrf.animation.GVRAnimation;
 import org.gearvrf.animation.GVRAnimationEngine;
 import org.gearvrf.animation.GVRRelativeMotionAnimation;
@@ -47,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.Future;
 
 public class FEViewManager extends GVRScript {
 	private static final String TAG = Log.tag(FEViewManager.class);
@@ -66,6 +69,7 @@ public class FEViewManager extends GVRScript {
     private GameStateMachine gameState;
     private GVRSceneObject homeButton, pauseButton, timerButton;
     private Player ovrEater;
+    private Boolean isBGAudioOnce = false;
 
 	private GVRSceneObject asyncSceneObject(GVRContext context, String meshName, String textureName)
 			throws IOException {
@@ -119,48 +123,21 @@ public class FEViewManager extends GVRScript {
         mainSceneObject.addChildObject(leftScreen);
         mainSceneObject.addChildObject(rightScreen);
 
-        /*mBullet = new Bullet();
-        mBullet.createPhysicsWorld(new Vector3(-480.0f, -480.0f, -480.0f),
-                new Vector3(480.0f, 480.0f, 480.0f), 1024, new Vector3(0.0f,
-                        -9.8f, 0.0f));
-
-        StaticPlaneShape floorShape = new StaticPlaneShape(new Vector3(0.0f,
-                1.0f, 0.0f), 0.0f);
-        Geometry floorGeometry = mBullet.createGeometry(floorShape, 0.0f,
-                new Vector3(0.0f, 0.0f, 0.0f));
-        MotionState floorState = new MotionState();
-        mBullet.createAndAddRigidBody(floorGeometry, floorState);*/
-
-        //setScoreMessage("Score: ", 2, 1, Color.BLUE, 25);
-        //setLivesMessage("Lives: ", 2, 1, Color.BLUE, 25);
-
-        //setDisplayMessage("text_background.png");
         tapTOStart = setInfoMessage("Tap to start");
         mainSceneObject.addChildObject(tapTOStart);
 
-        /*FETimerTask task = new FETimerTask();
-        Timer timer = new Timer(true);
-        timer.scheduleAtFixedRate(task, 0, 10 * 1000);*/
     }
-
-    /*public class FETimerTask extends TimerTask {
-
-        @Override
-        public void run() {
-
-        }
-    }*/
 
     private GVRTextViewSceneObject setInfoMessage(String str)
     {
-        GVRTextViewSceneObject textMessageObject = new GVRTextViewSceneObject(mGVRContext, 4, 2, str);
-        textMessageObject.setTextColor(Color.BLACK);
+        GVRTextViewSceneObject textMessageObject = new GVRTextViewSceneObject(mGVRContext, 4, 4, str);
+        textMessageObject.setTextColor(Color.YELLOW);
         textMessageObject.setGravity(Gravity.CENTER);
         textMessageObject.setKeepWrapper(true);
-        textMessageObject.setTextSize(20);
+        textMessageObject.setTextSize(15);
         textMessageObject.setBackgroundColor(Color.TRANSPARENT);
         textMessageObject.setRefreshFrequency(IntervalFrequency.HIGH);
-        textMessageObject.getTransform().setPosition(0.0f, 6.0f, -6.0f);
+        textMessageObject.getTransform().setPosition(-2.0f, 6.0f, -6.0f);
         textMessageObject.getTransform().rotateByAxisWithPivot(0, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 
         GVRRenderData renderData = textMessageObject.getRenderData();
@@ -180,7 +157,7 @@ public class FEViewManager extends GVRScript {
         collider.setEnable(false);
         scoreBoard.attachComponent(collider);
         scoreBoard.setTextColor(Color.YELLOW);
-        scoreBoard.setTextSize(8);
+        scoreBoard.setTextSize(6);
         scoreBoard.setBackgroundColor(Color.argb(0, 0, 0, 0));
         scoreBoard.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);
         rdata.setDepthTest(false);
@@ -193,7 +170,7 @@ public class FEViewManager extends GVRScript {
     private GVRTextViewSceneObject makeLivesLeft(GVRContext ctx, GVRSceneObject parent)
     {
         GVRTextViewSceneObject livesLeft = new GVRTextViewSceneObject(ctx, 5.3f, 1.5f, "Lives: 3");
-        livesLeft.setTextSize(7);
+        livesLeft.setTextSize(6);
         GVRRenderData rdata = livesLeft.getRenderData();
         GVRCollider collider = new GVRMeshCollider(ctx, true);
 
@@ -240,9 +217,9 @@ public class FEViewManager extends GVRScript {
             }
         };
         int THROW_OBJECT_RATE_MIN = 1 * 1000;
-        int THROW_OBJECT_RATE_MAX = 3 * 1000;
+        int THROW_OBJECT_RATE_MAX = 4 * 1000;
         int THROW_OBJECT_DELAY_MIN = 1 * 1000;
-        int THROW_OBJECT_DELAY_MAX = 3 * 1000;
+        int THROW_OBJECT_DELAY_MAX = 4 * 1000;
         timer.scheduleAtFixedRate(task,
                 Helper.randomInRange(THROW_OBJECT_DELAY_MIN, THROW_OBJECT_DELAY_MAX),
                 Helper.randomInRange(THROW_OBJECT_RATE_MIN, THROW_OBJECT_RATE_MAX));
@@ -302,21 +279,21 @@ public class FEViewManager extends GVRScript {
                     if (mObjects.get(i).getSceneObject().isColliding(headTracker)) {
                         //Log.e(TAG, "mObjects.get(i).getName: Penke " + mObjects.get(i).getName() + "score" + ovrEater.getCurrentScore());
                         if (mObjects.get(i).getName().compareTo("bomb") == 0) {
+                            animateTextures("explode_.zip", mObjects.get(i).getSceneObject());
                             ovrEater.loseALife();
                             AudioClip.getInstance(mGVRContext.getContext()).
                                     playSound(AudioClip.getUISoundGrenadeID(), 1.0f, 1.0f);
                             Log.e(TAG, "remaining Lives Penke " + ovrEater.getNumLivesRemaining());
-                        } else if (mObjects.get(i).getName().compareTo("burger") == 0) {
+                        } else if (mObjects.get(i).getName().compareTo("hamburger") == 0) {
+                            animateTextures("splat.zip", mObjects.get(i).getSceneObject());
                             AudioClip.getInstance(mGVRContext.getContext()).
                                     playSound(AudioClip.getUISoundEatID(), 1.0f, 1.0f);
                             ovrEater.incrementScore(50);
                         } else if (mObjects.get(i).getName().compareTo("hotdog") == 0) {
-                            AudioClip.getInstance(mGVRContext.getContext()).
-                                    playSound(AudioClip.getUISoundEatID(), 1.0f, 1.0f);
                             ovrEater.incrementScore(30);
                         } else if (mObjects.get(i).getName().compareTo("sodacan") == 0) {
                             AudioClip.getInstance(mGVRContext.getContext()).
-                                    playSound(AudioClip.getUISoundEatID(), 1.0f, 1.0f);
+                                    playSound(AudioClip.getUISoundDrinkID(), 1.0f, 1.0f);
                             ovrEater.incrementScore(10);
                         }
                         scoreTextMessageObject.setText(String.format("%03d", ovrEater.getCurrentScore()));
@@ -347,6 +324,41 @@ public class FEViewManager extends GVRScript {
         }
 	}
 
+    private void animateTextures(String assetName, GVRSceneObject object) {
+        try {
+            List<Future<GVRTexture>> loaderTextures = ZipLoader.load(mGVRContext,
+                    assetName, new ZipLoader.ZipEntryProcessor<Future<GVRTexture>>() {
+                        @Override
+                        public Future<GVRTexture> getItem(GVRContext context, GVRAndroidResource
+                                resource) {
+                            return context.loadFutureTexture(resource);
+                        }
+                    });
+
+            GVRSceneObject loadingObject = new GVRSceneObject(mGVRContext, 1.0f, 1.0f);
+
+            GVRRenderData renderData = loadingObject.getRenderData();
+            GVRMaterial loadingMaterial = new GVRMaterial(mGVRContext);
+            renderData.setMaterial(loadingMaterial);
+            renderData.setRenderingOrder(GVRRenderingOrder.TRANSPARENT);
+            loadingMaterial.setMainTexture(loaderTextures.get(0));
+            GVRAnimation animation = new ImageFrameAnimation(loadingMaterial, 1.5f,
+                    loaderTextures);
+            animation.setRepeatMode(GVRRepeatMode.ONCE);
+            animation.setRepeatCount(-1);
+            animation.start(mGVRContext.getAnimationEngine());
+
+            loadingObject.getTransform().setPosition(
+                    object.getTransform().getPositionX(),
+                    object.getTransform().getPositionY(),
+                    object.getTransform().getPositionZ()
+            );
+            mainSceneObject.addChildObject(loadingObject);
+        } catch (IOException e) {
+            Log.e(TAG, "Error loading animation", e);
+        }
+    }
+
     private void playerDead() {
         //stop throwing burgers
         //show score board
@@ -355,9 +367,11 @@ public class FEViewManager extends GVRScript {
                     .format("Score %d", ovrEater.getCurrentScore()));*/
         gameState.setStatus(GameStateMachine.GameStatus.STATE_GAME_END);
         showMouthPointer(false);
-        tapTOStart = setInfoMessage("Tap to start");
+        tapTOStart = setInfoMessage("Game Over   " + String
+                .format("Score : %d", ovrEater.getCurrentScore()) + "Click Back Button to Play Again");
         mainSceneObject.addChildObject(tapTOStart);
-        timer.cancel();
+        if(timer != null)
+            timer.cancel();
     }
 
     private void showMouthPointer(Boolean enable) {
@@ -420,8 +434,12 @@ public class FEViewManager extends GVRScript {
                 }
 
                 gameState.setStatus(GameStateMachine.GameStatus.STATE_GAME_IN_PROGRESS);
-                AudioClip.getInstance(mGVRContext.getContext()).
-                        playLoop(AudioClip.getUISoundBGID(), 0.8f, 0.8f);
+
+                if(!isBGAudioOnce) {
+                    AudioClip.getInstance(mGVRContext.getContext()).
+                            playLoop(AudioClip.getUISoundBGID(), 0.8f, 0.4f);
+                    isBGAudioOnce = true;
+                }
                 if(tapTOStart != null)
                     mainSceneObject.removeChildObject(tapTOStart);
 
