@@ -4,11 +4,9 @@ package com.gearvrf.fasteater;
  * Created by b1.miller on 7/29/2016.
  */
 public class Player {
-
-    private static int NUM_STARTING_LIVES = 3;
-
     private int currentScore;
     private int numLivesRemaining;
+    private static int NUM_STARTING_LIVES = 3;
 
     public Player() {
         currentScore = 0;
