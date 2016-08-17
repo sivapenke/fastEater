@@ -57,6 +57,7 @@ public class OEViewManager extends GVRScript {
     private Boolean isBGAudioOnce = false;
     private Timer timer;
     private List<Future<GVRTexture>> explodeTextures, splatTextures;
+    private long prevTime;
 
     private GVRSceneObject asyncSceneObject(GVRContext context, String meshName, String textureName)
 			throws IOException {
@@ -196,11 +197,17 @@ public class OEViewManager extends GVRScript {
 		return object;
 	}
 
-    private int MAX_THROW = 15;
+    private int MAX_THROW = 3;
     int THROW_OBJECT_RATE_MIN = 3 * 1000;
     int THROW_OBJECT_RATE_MAX = 6 * 1000;
     int THROW_OBJECT_DELAY_MIN = 3 * 1000;
     int THROW_OBJECT_DELAY_MAX = 6 * 1000;
+    private int MIN_GAME_WIDTH = -5;
+    private int MAX_GAME_WIDTH = 5;
+    private int MIN_GAME_HEIGHT_START = 5;
+    private int MAX_GAME_HEIGHT_START = 7;
+    private int MIN_SPEED = 8; //higher is slower
+    private int MAX_SPEED = 6; //0 being fastest
 
     private void _throwObject()
     {
@@ -209,7 +216,7 @@ public class OEViewManager extends GVRScript {
         {
             public void run() {
                 try {
-                    int num_throw = Helper.randomNextInt(MAX_THROW);
+                    int num_throw = Helper.randomNextInt(incMaxThrow());
                     for(int i = 0; i < num_throw; i++) {
                         throwAnObject();
                     }
@@ -225,19 +232,24 @@ public class OEViewManager extends GVRScript {
 
     }
 
+    private int incMaxThrow() {
+        long currTime = System.currentTimeMillis();
+        if(currTime - prevTime > 10000) {
+            if(MAX_THROW < 20) MAX_THROW += 2;
+            if(MIN_SPEED > 2 || MAX_SPEED > 0) {
+                MIN_SPEED -= 1;
+                MAX_SPEED -= 1;
+            }
+        }
+        prevTime = currTime;
+
+        return MAX_THROW;
+    }
+
     private void stopThrowingObjects() {
         if(timer != null)
             timer.cancel();
     }
-
-    private int MIN_GAME_WIDTH = -10;
-    private int MAX_GAME_WIDTH = 10;
-    private int MIN_GAME_HEIGHT_START = 5;
-    private int MAX_GAME_HEIGHT_START = 7;
-    private int MIN_GAME_HEIGHT_REACH = 5;
-    private int MAX_GAME_HEIGHT_REACH = 7;
-    private int MIN_SPEED = 2;
-    private int MAX_SPEED = 0;
 
     private String[][] OverEatObjects = new String[][]{
             { "hotdog.obj", "hotdog.png", "hotdog" },
@@ -441,6 +453,7 @@ public class OEViewManager extends GVRScript {
         if(tapTOStart != null) // remove "Tap to Play"
             mainSceneObject.removeChildObject(tapTOStart);
 
+        prevTime = System.currentTimeMillis();
         showMouthPointer(true);
         showRunningScore();
         _throwObject();
